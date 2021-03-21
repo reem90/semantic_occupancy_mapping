@@ -1,0 +1,34 @@
+[submodule "catkin_simple"]
+	path = catkin_simple
+	url = https://github.com/catkin/catkin_simple.git
+[submodule "eigen_checks"]
+	path = eigen_checks
+	url = https://github.com/ethz-asl/eigen_checks.git
+[submodule "minkindr"]
+	path = minkindr
+	url = https://github.com/ethz-asl/minkindr.git
+[submodule "minkindr_ros"]
+	path = minkindr_ros
+	url = https://github.com/ethz-asl/minkindr_ros.git
+[submodule "eigen_catkin"]
+	path = eigen_catkin
+	url = https://github.com/ethz-asl/eigen_catkin.git
+[submodule "glog_catkin"]
+	path = glog_catkin
+	url = https://github.com/ethz-asl/glog_catkin.git
+[submodule "gflags_catkin"]
+	path = gflags_catkin
+	url = https://github.com/ethz-asl/gflags_catkin.git
+[submodule "octomap_msgs"]
+	path = octomap_msgs
+	url = https://github.com/OctoMap/octomap_msgs.git
+[submodule "octomap_ros"]
+	path = octomap_ros
+	url = https://github.com/OctoMap/octomap_ros.git
+[submodule "catkin_boost_python_buildtool"]
+	path = catkin_boost_python_buildtool
+	url = https://github.com/ethz-asl/catkin_boost_python_buildtool.git
+[submodule "numpy_eigen"]
+	path = numpy_eigen
+	url = https://github.com/ethz-asl/numpy_eigen.git
+

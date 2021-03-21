@@ -1,0 +1,74 @@
+#####################
+# Octomap Generator
+#####################
+octomap:
+    pointcloud_topic: "/semantic_pcl/semantic_pcl" 
+    #pointcloud_topic: "/camera/depth/points"
+    #tree_type: COLOR_OCTREE 0 SEMANTICS_OCTREE_MAX 1 SEMANTICS_OCTREE_BAYESIAN 2
+    tree_type: 1
+    world_frame_id: "world"
+    resolution: 0.15 
+    max_range: 5.0
+    raycast_range: 3.0
+    clamping_thres_min: 0.12
+    clamping_thres_max: 0.97
+    occupancy_thres: 0.5
+    prob_hit: 0.7
+    prob_miss: 0.4
+    save_path : "/home/tii/maps/map.bt"
+    #save_path : "~/map.bt"
+
+#####################
+# System Related Parameters
+#####################
+system/v_max: 1 #0.5 ##0.5
+system/dyaw_max: 0.5
+# check the relevant sdf file: depth_camera_new.sdf
+system/camera/pitch: [0.0] #sensor_pitch: 0.0
+system/camera/horizontal: [60.0] #sensor_hor_fov: 60
+system/camera/vertical: [45.0] #sensor_ver_fov: 45
+system/bbx/x: 0.3 #0.1 
+system/bbx/y: 0.3 #0.1
+system/bbx/z: 0.3 #0.1
+system/bbx/overshoot: 0.5
+system/localization/use_gazebo_ground_truth: true
+
+
+debug_save_state: false  
+debug_load_state: false
+debug_write_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/map1.ot"
+debug_read_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/map.bt"
+
+############
+## Octomap Manager settings
+############
+tf_frame: "world"
+robot_frame: "base_point_cloud"
+resolution: 0.15
+mesh_resolution: 1.0
+visualize_max_z: 5.0
+sensor_max_range: 8.0
+map_publish_frequency: 0.2
+probability_hit: 0.7
+probability_miss: 0.4
+threshold_min: 0.12
+threshold_max: 0.97
+threshold_occupancy: 0.7
+treat_unknown_as_occupied: false
+latch_topics: false
+max_free_space: 0
+min_height_free_space: 0
+change_detection_enabled: false
+
+
+
+dataset_labels_ade20k: ['wall', 'building', 'sky', 'floor', 'tree', 'ceiling', 'road', 'bed ', 'windowpane', 'grass', 'cabinet', 'sidewalk', 'person', 'earth', 'door', 'table', 'mountain', 'plant', 'curtain', 'chair', 'car', 'water', 'painting', 'sofa', 'shelf', 'house', 'sea', 'mirror', 'rug', 'field', 'armchair', 'seat', 'fence', 'desk', 'rock', 'wardrobe', 'lamp', 'bathtub', 'railing', 'cushion', 'base', 'box', 'column', 'signboard', 'chest of drawers', 'counter', 'sand', 'sink', 'skyscraper', 'fireplace', 'refrigerator', 'grandstand', 'path', 'stairs', 'runway', 'case', 'pool table', 'pillow', 'screen door', 'stairway', 'river', 'bridge', 'bookcase', 'blind', 'coffee table', 'toilet', 'flower', 'book', 'hill', 'bench', 'countertop', 'stove', 'palm', 'kitchen island', 'computer', 'swivel chair', 'boat', 'bar', 'arcade machine', 'hovel', 'bus', 'towel', 'light', 'truck', 'tower', 'chandelier', 'awning', 'streetlight', 'booth', 'television', 'airplane', 'dirt track', 'apparel', 'pole', 'land', 'bannister', 'escalator', 'ottoman', 'bottle', 'buffet', 'poster', 'stage', 'van', 'ship', 'fountain', 'conveyer belt', 'canopy', 'washer', 'plaything', 'swimming pool', 'stool', 'barrel', 'basket', 'waterfall', 'tent', 'bag', 'minibike', 'cradle', 'oven', 'ball', 'food', 'step', 'tank', 'trade name', 'microwave', 'pot', 'animal', 'bicycle', 'lake', 'dishwasher', 'screen', 'blanket', 'sculpture', 'hood', 'sconce', 'vase', 'traffic light', 'tray', 'ashcan', 'fan', 'pier', 'crt screen', 'plate', 'monitor', 'bulletin board', 'shower', 'radiator', 'glass', 'clock', 'flag']
+
+objects_of_interest: ["person","desk","cabinet","sofa","vase","stove","bed","chair","table"]
+#objects_of_interest: ["person"]
+
+/orientation_flag: false
+/nbv_serialization_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/nbv_serialization.dat"
+/orientation_debugging_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/orientationDebugging.txt"
+/number_of_orientation_intervals: 6.0
+
