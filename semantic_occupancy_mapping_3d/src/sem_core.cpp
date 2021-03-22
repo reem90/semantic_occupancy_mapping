@@ -41,7 +41,7 @@ semMAP::semCore::semCore() : semMAP::MapBase::MapBase()
 semMAP::semCore::semCore(OctomapGeneratorBase *octomap_generator_)
     : semMAP::MapBase::MapBase(octomap_generator_)
 {
-    srand(time(0)); 
+    //srand(time(0)); 
     setup();
 }
 
@@ -49,10 +49,10 @@ void semMAP::semCore::setup()
 {
     
     //iterationCount_ = 0;
-    //for (int i = 0; i < 4; i++)
-    //{
-    //    inspectionThrottleTime_.push_back(ros::Time::now().toSec());
-    //}
+    for (int i = 0; i < 4; i++)
+    {
+        inspectionThrottleTime_.push_back(ros::Time::now().toSec());
+    }
     // If logging is required, set up files here
     bool ifLog = false;
     std::string ns = ros::this_node::getName();
@@ -64,14 +64,6 @@ void semMAP::semCore::setup()
         struct tm *ptm;
         time(&rawtime);
         ptm = gmtime(&rawtime);
-        //logFilePath_ = ros::package::getPath("semantic_exploration") + "/data/" +
-        //        std::to_string(ptm->tm_year + 1900) + "_" + std::to_string(ptm->tm_mon + 1) +
-        //        "_" + std::to_string(ptm->tm_mday) + "_" + std::to_string(ptm->tm_hour) +
-        //        "_" + std::to_string(ptm->tm_min) + "_" + std::to_string(ptm->tm_sec);
-       // system(("mkdir -p " + logFilePath_).c_str());
-       // logFilePath_ += "/";
-       // fileResponse_.open((logFilePath_ + "response.txt").c_str(), std::ios::out);
-       // filePath_.open((logFilePath_ + "path.txt").c_str(), std::ios::out);
     }
 
     debugParam = false;
@@ -83,18 +75,7 @@ void semMAP::semCore::setup()
 
 semMAP::semCore::~semCore()
 {
-   /* if (fileResponse_.is_open())
-    {
-        fileResponse_.close();
-    }
-    if (fileTree_.is_open())
-    {
-        fileTree_.close();
-    }
-    if (filePath_.is_open())
-    {
-        filePath_.close();
-    }*/
+
 }
 
 void semMAP::semCore::setStateFromPoseMsg(const geometry_msgs::PoseWithCovarianceStamped &pose)

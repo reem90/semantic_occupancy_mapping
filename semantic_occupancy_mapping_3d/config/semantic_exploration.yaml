@@ -6,7 +6,7 @@ octomap:
     #pointcloud_topic: "/camera/depth/points"
     #tree_type: COLOR_OCTREE 0 SEMANTICS_OCTREE_MAX 1 SEMANTICS_OCTREE_BAYESIAN 2
     tree_type: 1
-    world_frame_id: "world"
+    world_frame_id: "uav1/local_origin"
     resolution: 0.15 
     max_range: 5.0
     raycast_range: 3.0
@@ -42,7 +42,7 @@ debug_read_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/map.bt"
 ############
 ## Octomap Manager settings
 ############
-tf_frame: "world"
+tf_frame: "uav1/local_origin"
 robot_frame: "base_point_cloud"
 resolution: 0.15
 mesh_resolution: 1.0
@@ -71,4 +71,8 @@ objects_of_interest: ["person","desk","cabinet","sofa","vase","stove","bed","cha
 /nbv_serialization_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/nbv_serialization.dat"
 /orientation_debugging_file: "/home/arrow/catkin_ws/src/semantic_based_exploration/orientationDebugging.txt"
 /number_of_orientation_intervals: 6.0
+
+
+
+
 

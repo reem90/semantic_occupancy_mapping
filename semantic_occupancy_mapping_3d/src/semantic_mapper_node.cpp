@@ -106,7 +106,7 @@ struct Params
     double dt;
     int numIterations;
     bool iflog;
-    int root_note_delay_indicator ; 
+    //int root_note_delay_indicator ; 
 };
 
 class SemanticMapper3D
@@ -151,7 +151,7 @@ SemanticMapper3D::SemanticMapper3D(const ros::NodeHandle &nh, const ros::NodeHan
     ROS_INFO("Drone Name:%s NameSpace:%s", droneName.c_str(), droneNameSpace.c_str());
 
     explorationViewpointPub =
-            nh_.advertise<geometry_msgs::PoseStamped>("semantic_exploration_viewpoint", 10);
+            nh_.advertise<geometry_msgs::PoseStamped>("semantic_viewpoint", 10);
     
     //TODO: make this a parameter and make it global
     bool use_gazebo_ground_truth_ = false;
@@ -167,8 +167,7 @@ SemanticMapper3D::SemanticMapper3D(const ros::NodeHandle &nh, const ros::NodeHan
     }
     else
     {
-        localPoseSub = nh_.subscribe<geometry_msgs::PoseStamped>(droneNameSpace +
-                                                                 "/mavros/local_position/pose", 10, &SemanticMapper3D::poseCallback, this);
+        localPoseSub = nh_.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 10, &SemanticMapper3D::poseCallback, this);
     }
     
     //rotationPublisher = nh_.advertise<controller_msgs::FlatTarget>("reference/flatsetpoint", 100);
@@ -265,7 +264,7 @@ void SemanticMapper3D::RunStateMachine()
         //waypoint_navigator::GoToPoseWaypoints gotoPoseWaypointsSrv;
 
         ROS_INFO("Mapper Call");
-        ros::service::waitForService("sem_mapper", ros::Duration(1.0));
+        ros::service::waitForService("sem_mapper", ros::Duration(3.0));
         if (ros::service::call("sem_mapper", planSrv))
         {            
             ROS_INFO("Planner Call Successfull");
@@ -304,30 +303,23 @@ bool SemanticMapper3D::SetParams()
     // Exploration Algorithm Params
     // 1- Termination
 
-    params_.numIterations = 50;
-    if (!ros::param::get(ns + "/exploration/num_iterations", params_.numIterations))
+    params_.numIterations = 500;
+    if (!ros::param::get(ns + "/mapping/num_iterations", params_.numIterations))
     {
         ROS_WARN("No number of iteration for termination specified. Looking for %s",
-                 (ns + "/exploration/num_iterations").c_str());
+                 (ns + "/mapping/num_iterations").c_str());
     }
 
     params_.dt = 1.0;
-    if (!ros::param::get(ns + "/exploration/dt", params_.dt))
+    if (!ros::param::get(ns + "/mapping/dt", params_.dt))
     {
         ROS_WARN("Delta T between Iterations not found. Looking for %s",
-                 (ns + "/exploration/dt").c_str());
+                 (ns + "/mapping/dt").c_str());
     }
     params_.iflog = false;
-    if (!ros::param::get(ns + "/exploration/log/on", params_.iflog))
+    if (!ros::param::get(ns + "/mapping/log/on", params_.iflog))
     {
-        ROS_WARN("No log is specified. Looking for %s.", (ns + "/exploration/log/on").c_str());
-    }
-
-    params_.root_note_delay_indicator = 5;
-    if (!ros::param::get(ns + "/exploration/drone_arrival_duration", params_.root_note_delay_indicator))
-    {
-        ROS_WARN("No number of iteration for termination specified. Looking for %s",
-                 (ns + "/exploration/drone_arrival_duration").c_str());
+        ROS_WARN("No log is specified. Looking for %s.", (ns + "/mapping/log/on").c_str());
     }
 
     return ret;

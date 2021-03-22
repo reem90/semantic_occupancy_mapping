@@ -73,7 +73,7 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
     params_.transfromedPoseDebug =
        nh_.advertise<geometry_msgs::PoseStamped>("transformed_pose", 100);
     plannerService_ =
-    nh_.advertiseService("sem_mapper", &semMAP::semanticMapper::plannerCallback, this);
+    nh_.advertiseService("sem_mapper", &semMAP::semanticMapper::mapperCallback, this);
     // Either use perfect positioning from gazebo, or get the px4 estimator position through mavros // OR Pose of MRS System
     // todo: add the topic as a param in config file
     if (params_.use_gazebo_ground_truth_)
@@ -269,94 +269,7 @@ void semMAP::semanticMapper::computeCameraFOV()
 
 void semMAP::semanticMapper::setupLog()
 {
-    // setup logging files
-    if (params_.log_)
-    {
-        time_t rawtime;
-        struct tm* ptm;
-        time(&rawtime);
-        ptm = gmtime(&rawtime);
-        logFilePathName_ = ros::package::getPath("semantic_exploration") + "/data/" +
-                           std::to_string(ptm->tm_year + 1900) + "_" +
-                           std::to_string(ptm->tm_mon + 1) + "_" + std::to_string(ptm->tm_mday) +
-                           "_" + std::to_string(ptm->tm_hour) + "_" + std::to_string(ptm->tm_min) +
-                           "_" + std::to_string(ptm->tm_sec);
-        system(("mkdir -p " + logFilePathName_).c_str());
-        logFilePathName_ += "/";
-        file_path_.open((logFilePathName_ + params_.output_file_name_).c_str(), std::ios::out);
-        file_path_ << "iteration_num"
-                   << ","
-                   << "volumetric_coverage"
-                   << ","
-                   << "traveled_distance"
-                   << ","
-                   << "information_gain_entropy"
-                   << ","
-                   << "semantic_gain_entropy"
-                   << ","
-                   << "total_gain"
-                   << ","
-                   << "free_cells_counter"
-                   << ","
-                   << "occupied_cells_counter"
-                   << ","
-                   << "unknown_cells_counter"
-                   << ","
-                   << "all_cells_counter"
-                   << ","
-                   << "position.x"
-                   << ","
-                   << "position.y"
-                   << ","
-                   << "position.z"
-                   << ","
-                   << "orientation.x"
-                   << ","
-                   << "orientation.y"
-                   << ","
-                   << "orientation.z"
-                   << ","
-                   << "orientation.w"
-                   << ","
-                   << "accumulativeGain"
-                   << ","
-                   << "rrt_gain"
-                   << ","
-                   << "freeCells"
-                   << ","
-                   << "UnknownCells"
-                   << ","
-                   << "occupiedCellsNotLabeled"
-                   << ","
-                   << "occupiedCellsLowConfidance"
-                   << ","
-                   << "occupiedCellsHighConfidance"
-                   << ","
-                   << "loggingTime" 
-                   << ","
-                   << "evaluationTime"
-                   << "\n" ; 
-        objects_file_path_.open((logFilePathName_ + params_.output_objects_file_name_).c_str(), std::ios::out);
-        objects_file_path_ << "wall"   << "," << "building" << "," << "sky" << "," << "floor" << "," << "tree" << "," << "ceiling"<< "," << "road"<< "," << "bed "<< "," << "windowpane"<< "," << "grass"<< "," 
-                   << "cabinet"<< "," << "sidewalk" << "," << "person"<< "," << "earth"<< "," << "door"<< "," << "table"<< "," << "mountain"<< "," << "plant"<< "," << "curtain"<< "," << "chair"<< ","
-                   << "car"    << "," << "water"    << "," << "painting"<< "," << "sofa"<< "," << "shelf"<< "," << "house"<< "," << "sea"<< "," << "mirror"<< "," << "rug"<< "," << "field"<< "," 
-                   << "armchair"<< "," << "seat"<< "," << "fence"<< "," << "desk"<< "," << "rock"<< "," << "wardrobe"<< "," << "lamp"<< "," << "bathtub"<< "," << "railing"<< "," << "cushion"<< "," 
-                   << "base"<< "," << "box"<< "," << "column"<< "," << "signboard"<< "," << "chest of drawers"<< "," << "counter"<< "," << "sand"<< "," << "sink"<< "," << "skyscraper"<< "," << "fireplace"<< "," 
-                   << "refrigerator"<< "," << "grandstand"<< "," << "path"<< "," << "stairs"<< "," << "runway"<< "," << "case"<< "," << "pool table"<< "," << "pillow"<< "," << "screen door"<< "," << "stairway"<< ","
-                   << "river"<< "," << "bridge"<< "," << "bookcase"<< "," << "blind"<< "," << "coffee table"<< "," << "toilet"<< "," << "flower"<< "," << "book"<< "," << "hill"<< "," << "bench"<< "," 
-                   << "countertop"<< "," << "stove"<< "," << "palm"<< "," << "kitchen island"<< "," << "computer"<< "," << "swivel chair"<< "," << "boat"<< "," << "bar"<< "," << "arcade machine"<< "," << "hovel"<< "," 
-                   << "bus"<< "," << "towel"<< "," << "light"<< "," << "truck"<< "," << "tower"<< "," << "chandelier"<< "," << "awning"<< "," << "streetlight"<< "," << "booth"<< "," << "television"<< ","
-                   << "airplane"<< "," << "dirt track"<< "," << "apparel"<< "," << "pole"<< "," << "land"<< "," << "bannister"<< "," << "escalator"<< "," << "ottoman"<< "," << "bottle"<< "," << "buffet"<< "," 
-                   << "poster"<< "," << "stage"<< "," << "van"<< "," << "ship"<< "," << "fountain"<< "," << "conveyer belt"<< "," << "canopy"<< "," << "washer"<< "," << "plaything"<< "," << "swimming pool"<< ","
-                   << "stool"<< "," << "barrel"<< "," << "basket"<< "," << "waterfall"<< "," << "tent"<< "," << "bag"<< "," << "minibike"<< "," << "cradle"<< "," << "oven"<< "," << "ball"<< "," 
-                   << "food"<< "," << "step"<< "," << "tank"<< "," << "trade name"<< "," << "microwave"<< "," << "pot"<< "," << "animal"<< "," << "bicycle"<< "," << "lake"<< "," << "dishwasher"<< "," 
-                   << "screen"<< "," << "blanket"<< "," << "sculpture"<< "," << "hood"<< "," << "sconce"<< "," << "vase"<< "," << "traffic light"<< "," << "tray"<< "," << "ashcan"<< "," << "fan"<< "," 
-                   << "pier"<< "," << "crt screen"<< "," << "plate"<< "," << "monitor"<< "," << "bulletin board"<< "," << "shower"<< "," << "radiator"<< "," << "glass"<< "," << "clock" << "," << "flag"
-                   << "\n";
-                       // **** logging **** // 
-        for (int i = 0; i < 150 ; i++ ) 
-            Objectarray.push_back(0) ; 
-    }
+	//return true; 
 }
 
 bool semMAP::semanticMapper::toggleUseSemanticColor(std_srvs::Empty::Request& request,
@@ -418,10 +331,10 @@ void semMAP::semanticMapper::insertCloudCallback(const sensor_msgs::PointCloud2:
     }
 }
 
-bool semMAP::semanticMapper::plannerCallback(semantic_occupancy_mapping_3d::GetPath::Request& req,
+bool semMAP::semanticMapper::mapperCallback(semantic_occupancy_mapping_3d::GetPath::Request& req,
                                          semantic_occupancy_mapping_3d::GetPath::Response& res)
 {
-    timer.start("[NBVLoop]PlannerCallback");
+    timer.start("[SEMLoop]mapperCallback");
     ROS_INFO("########### New Planning Iteration ###########");
 
     //params_.explorationarea_.publish(area_marker_);

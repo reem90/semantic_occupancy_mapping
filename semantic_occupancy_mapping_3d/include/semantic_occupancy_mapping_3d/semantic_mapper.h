@@ -85,7 +85,7 @@ class semanticMapper
     void posCallback(const geometry_msgs::PoseWithCovarianceStamped& pose);
     void odomCallback(const nav_msgs::Odometry& pose);
 
-    bool plannerCallback(semantic_occupancy_mapping_3d::GetPath::Request& req,
+    bool mapperCallback(semantic_occupancy_mapping_3d::GetPath::Request& req,
                          semantic_occupancy_mapping_3d::GetPath::Response& res);
 
     void insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg);
