@@ -24,7 +24,6 @@
 #include <octomap_msgs/Octomap.h>
 #include <ros/package.h>
 #include <ros/ros.h>
-//#include <semantic_exploration/SelectPose.h>
 #include <semantic_occupancy_mapping_3d/rrt_tree.h>
 #include <semantics_octree/semantics_octree.h>
 #include <eigen3/Eigen/Dense>
@@ -46,52 +45,13 @@ class semCore : public MapBase
     virtual void setStateFromPoseMsg(const geometry_msgs::PoseWithCovarianceStamped &pose);
     virtual void setStateFromOdometryMsg(const nav_msgs::Odometry &pose);
     virtual void setup();
-    //virtual void clear();
-
-    void publishDebugNode(StateVec node , int Nodetype) ;
-    void publishDebugGain(StateVec node ,  double gain, int type) ;
-    void publishDebugStatus(StateVec node , int status) ;
 
   protected:
-    kdtree *kdTree_;
-    std::stack<StateVec> history_;
-    std::vector<StateVec> bestBranchMemory_;
-    int g_ID_;
-    int iterationCount_;
-    std::fstream fileTree_;
-    std::fstream fileResponse_;
-    std::fstream fileCoverageAndGain_;
-    std::string logFilePath_;
     std::vector<double> inspectionThrottleTime_;
-    std::ofstream outfile;
-
-    visualization_msgs::MarkerArray sample_points_array  ;
-    int marker_id ;
     bool  debugParam;
-    
-    std::string orientationDebugFile_;
-
-/*private:
-  friend class boost::serialization::access;
-
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version)
-  {
-    ar & g_ID_;
-    //ar & history_;
-    /*ar & bestBranchMemory_;
-    ar & iterationCount_;
-    ar & oneViewObjectFound;
-    ar & markerCounter;
-    ar & utilityFunction;
-    ar & alphaGain;
-    ar & betaGain;
-    ar & marker_id ; 
-    ar & debugParam; 
-  }
-  */
+ 
 };
-}  // namespace rrtNBV
+}  // namespace semMAP
 
 
 #endif

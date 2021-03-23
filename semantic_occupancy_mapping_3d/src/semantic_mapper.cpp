@@ -45,7 +45,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <semantic_cloud/SemanticColoredLabels.h>
 
 #include <std_srvs/Empty.h>
-#include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <eigen3/Eigen/Dense>
 #include <fstream>
 #include <iostream>
@@ -54,12 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace std;
 using namespace Eigen;
 
-double calculateDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2)
-{
-    return sqrt((p1.position.x - p2.position.x) * (p1.position.x - p2.position.x) +
-                (p1.position.y - p2.position.y) * (p1.position.y - p2.position.y) +
-                (p1.position.z - p2.position.z) * (p1.position.z - p2.position.z));
-}
+
 
 semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private)
     : nh_(nh), nh_private_(nh_private)
@@ -70,10 +64,8 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
     }
 
     // Set up the topics and services
-    params_.transfromedPoseDebug =
-       nh_.advertise<geometry_msgs::PoseStamped>("transformed_pose", 100);
-    plannerService_ =
-    nh_.advertiseService("sem_mapper", &semMAP::semanticMapper::mapperCallback, this);
+    params_.transfromedPoseDebug = nh_.advertise<geometry_msgs::PoseStamped>("transformed_pose", 100);
+    mapperService_ = nh_.advertiseService("sem_mapper", &semMAP::semanticMapper::mapperCallback, this);
     // Either use perfect positioning from gazebo, or get the px4 estimator position through mavros // OR Pose of MRS System
     // todo: add the topic as a param in config file
     if (params_.use_gazebo_ground_truth_)
@@ -82,13 +74,11 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
     }
     else
     {
-        posStampedClient_ = nh_.subscribe("/mavros/local_position/pose", 10,
-                                          &semMAP::semanticMapper::posStampedCallback, this);
+        posStampedClient_ = nh_.subscribe("/mavros/local_position/pose", 10,&semMAP::semanticMapper::posStampedCallback, this);
         posClient_ = nh_.subscribe("pose", 10, &semMAP::semanticMapper::posCallback, this);
     }
-
-    firstPoseCalled = true;
-    iteration_num = 0;
+    
+    // todo: add the topic as a param in config file
 
     // Getting params
     debug_load_state_param = false ; 
@@ -149,7 +139,7 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
     fullmapPub_ = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1, true);
     pointcloud_sub_ = nh_.subscribe(params_.pointCloudTopic_, 1, &semMAP::semanticMapper::insertCloudCallback, this);
 
-    computeCameraFOV();
+
     setupLog();
     getSemanticLabelledColors();
 
@@ -173,11 +163,11 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
 
     std::string ns = ros::this_node::getName();
     ROS_INFO("********************* The topic name is:%s", posStampedClient_.getTopic().c_str());
-    // Initialize the tree instance.
-    ROS_INFO("*************************** rrt generated ******************************");
+    // Map Initialization Instance.
+    ROS_INFO("*************************** Start mapping ******************************");
     // ###########################################################
-    mapObject = new semMAP::semCore(octomap_generator_);
-    mapObject->setParams(params_);
+    //mapObject = new semMAP::semCore(octomap_generator_);
+    //mapObject->setParams(params_);
     // ###########################################################
     // Not yet ready. need a position msg first.
     ready_ = false;
@@ -238,34 +228,6 @@ void semMAP::semanticMapper::getSemanticLabelledColors()
     ROS_INFO("Book Colors are:%d %d %d",bookColor.r,bookColor.g,bookColor.b);
 }
 
-void semMAP::semanticMapper::computeCameraFOV()
-{
-    // Precompute the camera field of view boundaries. The normals of the separating hyperplanes are stored
-    params_.camBoundNormals_.clear();
-    // This loop will only be executed once
-    for (uint i = 0; i < params_.camPitch_.size(); i++)
-    {
-        double pitch = M_PI * params_.camPitch_[i] / 180.0;
-        double camTop = (pitch - M_PI * params_.camVertical_[i] / 360.0) + M_PI / 2.0;
-        double camBottom = (pitch + M_PI * params_.camVertical_[i] / 360.0) - M_PI / 2.0;
-        double side = M_PI * (params_.camHorizontal_[i]) / 360.0 - M_PI / 2.0;
-        Eigen::Vector3d bottom(cos(camBottom), 0.0, -sin(camBottom));
-        Eigen::Vector3d top(cos(camTop), 0.0, -sin(camTop));
-        Eigen::Vector3d right(cos(side), sin(side), 0.0);
-        Eigen::Vector3d left(cos(side), -sin(side), 0.0);
-        Eigen::AngleAxisd m = Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY());
-        Eigen::Vector3d rightR = m * right;
-        Eigen::Vector3d leftR = m * left;
-        rightR.normalize();
-        leftR.normalize();
-        std::vector<Eigen::Vector3d> camBoundNormals;
-        camBoundNormals.push_back(Eigen::Vector3d(bottom.x(), bottom.y(), bottom.z()));
-        camBoundNormals.push_back(Eigen::Vector3d(top.x(), top.y(), top.z()));
-        camBoundNormals.push_back(Eigen::Vector3d(rightR.x(), rightR.y(), rightR.z()));
-        camBoundNormals.push_back(Eigen::Vector3d(leftR.x(), leftR.y(), leftR.z()));
-        params_.camBoundNormals_.push_back(camBoundNormals);
-    }
-}
 
 void semMAP::semanticMapper::setupLog()
 {
@@ -337,7 +299,7 @@ bool semMAP::semanticMapper::mapperCallback(semantic_occupancy_mapping_3d::GetPa
     timer.start("[SEMLoop]mapperCallback");
     ROS_INFO("########### New Planning Iteration ###########");
 
-    //params_.explorationarea_.publish(area_marker_);
+
     
     if (!ros::ok())
     {
@@ -345,22 +307,22 @@ bool semMAP::semanticMapper::mapperCallback(semantic_occupancy_mapping_3d::GetPa
         return true;
     }
 
-    // Check that planner is ready to compute path.
+    // Check that mapper is ready to compute path.
     if (!ready_)
     {
-        ROS_ERROR_THROTTLE(1, "Planner not set up: Planner not ready!");
+        ROS_ERROR_THROTTLE(1, "Mapper not set up: Mapper not ready!");
         return true;
     }
 
     if (octomap_generator_ == nullptr)
     {
-        ROS_ERROR_THROTTLE(1, "Planner not set up: No octomap available!");
+        ROS_ERROR_THROTTLE(1, "Mapper not set up: No octomap available!");
         return true;
     }
 
     if (octomap_generator_->getMapSize().norm() <= 0.0)
     {
-        ROS_ERROR_THROTTLE(1, "Planner not set up: Octomap is empty!");
+        ROS_ERROR_THROTTLE(1, "Mapper not set up: Octomap is empty!");
         return true;
     }
 
@@ -438,45 +400,23 @@ bool semMAP::semanticMapper::mapperCallback(semantic_occupancy_mapping_3d::GetPa
 
 void semMAP::semanticMapper::posStampedCallback(const geometry_msgs::PoseStamped& pose)
 {
-    if (firstPoseCalled)
-    {
-        firstPoseCalled = false;
-        prePose = pose.pose;
-        return;
-    }
-    else
-    {
-        traveled_distance += calculateDistance(prePose, pose.pose);
-        prePose = pose.pose;
-    }
-
-    mapObject->setStateFromPoseStampedMsg(pose);
-    // Planner is now ready to plan.
+    //mapObject->setStateFromPoseStampedMsg(pose);
+    // Mapper is now ready to plan.
     ready_ = true;
 }
 
 void semMAP::semanticMapper::posCallback(const geometry_msgs::PoseWithCovarianceStamped& pose)
 {
-    mapObject->setStateFromPoseMsg(pose);
-    // Planner is now ready to plan.
+    //mapObject->setStateFromPoseMsg(pose);
+    // Mapper is now ready to plan.
     ready_ = true;
 }
 
 void semMAP::semanticMapper::odomCallback(const nav_msgs::Odometry& pose)
 {
-    if (firstPoseCalled)
-    {
-        firstPoseCalled = false;
-        prePose = pose.pose.pose;
-        return;
-    }
-    else
-    {
-        traveled_distance += calculateDistance(prePose, pose.pose.pose);
-        prePose = pose.pose.pose;
-    }
-    mapObject->setStateFromOdometryMsg(pose);
-    // Planner is now ready to plan.
+ 
+    //mapObject->setStateFromOdometryMsg(pose);
+    // Mapper is now ready to plan.
     ready_ = true;
 }
 
@@ -496,36 +436,6 @@ bool semMAP::semanticMapper::setParams()
     //std::cout<<"Node name is:"<<ns<<"\n";
     std::string ns = "";
     bool ret = true;
-    params_.v_max_ = 0.25;
-    if (!ros::param::get(ns + "/system/v_max", params_.v_max_))
-    {
-        ROS_WARN("No maximal system speed specified. Looking for %s. Default is 0.25.",
-                 (ns + "/system/v_max").c_str());
-    }
-    params_.dyaw_max_ = 0.5;
-    if (!ros::param::get(ns + "/system/dyaw_max", params_.dyaw_max_))
-    {
-        ROS_WARN("No maximal yaw speed specified. Looking for %s. Default is 0.5.",
-                 (ns + "/system/yaw_max").c_str());
-    }
-    params_.camPitch_ = {15.0};
-    if (!ros::param::get(ns + "/system/camera/pitch", params_.camPitch_))
-    {
-        ROS_WARN("No camera pitch specified. Looking for %s. Default is 15deg.",
-                 (ns + "/system/camera/pitch").c_str());
-    }
-    params_.camHorizontal_ = {90.0};
-    if (!ros::param::get(ns + "/system/camera/horizontal", params_.camHorizontal_))
-    {
-        ROS_WARN("No camera horizontal opening specified. Looking for %s. Default is 90deg.",
-                 (ns + "/system/camera/horizontal").c_str());
-    }
-    params_.camVertical_ = {60.0};
-    if (!ros::param::get(ns + "/system/camera/vertical", params_.camVertical_))
-    {
-        ROS_WARN("No camera vertical opening specified. Looking for %s. Default is 60deg.",
-                 (ns + "/system/camera/vertical").c_str());
-    }
     params_.use_gazebo_ground_truth_ = false;
     if (!ros::param::get(ns + "/system/localization/use_gazebo_ground_truth",
                          params_.use_gazebo_ground_truth_))
@@ -533,96 +443,6 @@ bool semMAP::semanticMapper::setParams()
         ROS_WARN("using localization ground truth is not specified in the parameters while Looking "
                  "for %s. Default is false",
                  (ns + "/system/localization/use_gazebo_ground_truth").c_str());
-    }
-    if (params_.camPitch_.size() != params_.camHorizontal_.size() ||
-        params_.camPitch_.size() != params_.camVertical_.size())
-    {
-        ROS_WARN("Specified camera fields of view unclear: Not all parameter vectors have same "
-                 "length! Setting to default.");
-        params_.camPitch_.clear();
-        params_.camPitch_ = {15.0};
-        params_.camHorizontal_.clear();
-        params_.camHorizontal_ = {90.0};
-        params_.camVertical_.clear();
-        params_.camVertical_ = {60.0};
-    }
- 
-    params_.extensionRange_ = 1.0;
-    if (!ros::param::get(ns + "/nbvp/tree/extension_range", params_.extensionRange_))
-    {
-        ROS_WARN("No value for maximal extension range specified. Looking for %s. Default is 1.0m.",
-                 (ns + "/nbvp/tree/extension_range").c_str());
-    }
- 
-    params_.dt_ = 0.1;
-    if (!ros::param::get(ns + "/nbvp/dt", params_.dt_))
-    {
-        ROS_WARN("No sampling time step specified. Looking for %s. Default is 0.1s.",
-                 (ns + "/nbvp/dt").c_str());
-    }
-  
-    if (!ros::param::get(ns + "/bbx/minX", params_.minX_))
-    {
-        ROS_WARN("No x-min value specified. Looking for %s", (ns + "/bbx/minX").c_str());
-        ret = false;
-    }
-    if (!ros::param::get(ns + "/bbx/minY", params_.minY_))
-    {
-        ROS_WARN("No y-min value specified. Looking for %s", (ns + "/bbx/minY").c_str());
-        ret = false;
-    }
-    if (!ros::param::get(ns + "/bbx/minZ", params_.minZ_))
-    {
-        ROS_WARN("No z-min value specified. Looking for %s", (ns + "/bbx/minZ").c_str());
-        ret = false;
-    }
-    if (!ros::param::get(ns + "/bbx/maxX", params_.maxX_))
-    {
-        ROS_WARN("No x-max value specified. Looking for %s", (ns + "/bbx/maxX").c_str());
-        ret = false;
-    }
-    if (!ros::param::get(ns + "/bbx/maxY", params_.maxY_))
-    {
-        ROS_WARN("No y-max value specified. Looking for %s", (ns + "/bbx/maxY").c_str());
-        ret = false;
-    }
-    if (!ros::param::get(ns + "/bbx/maxZ", params_.maxZ_))
-    {
-        ROS_WARN("No z-max value specified. Looking for %s", (ns + "/bbx/maxZ").c_str());
-        ret = false;
-    }
-    params_.softBounds_ = false;
-    if (!ros::param::get(ns + "/bbx/softBounds", params_.softBounds_))
-    {
-        ROS_WARN("Not specified whether scenario bounds are soft or hard. Looking for %s. Default "
-                 "is false",
-                 (ns + "/bbx/softBounds").c_str());
-    }
-    params_.boundingBox_[0] = 0.5;
-    if (!ros::param::get(ns + "/system/bbx/x", params_.boundingBox_[0]))
-    {
-        ROS_WARN("No x size value specified. Looking for %s. Default is 0.5m.",
-                 (ns + "/system/bbx/x").c_str());
-    }
-    params_.boundingBox_[1] = 0.5;
-    if (!ros::param::get(ns + "/system/bbx/y", params_.boundingBox_[1]))
-    {
-        ROS_WARN("No y size value specified. Looking for %s. Default is 0.5m.",
-                 (ns + "/system/bbx/y").c_str());
-    }
-    params_.boundingBox_[2] = 0.3;
-    if (!ros::param::get(ns + "/system/bbx/z", params_.boundingBox_[2]))
-    {
-        ROS_WARN("No z size value specified. Looking for %s. Default is 0.3m.",
-                 (ns + "/system/bbx/z").c_str());
-    }
-  
-    params_.dOvershoot_ = 0.5;
-    if (!ros::param::get(ns + "/system/bbx/overshoot", params_.dOvershoot_))
-    {
-        ROS_WARN("No estimated overshoot value for collision avoidance specified. Looking for %s. "
-                 "Default is 0.5m.",
-                 (ns + "/system/bbx/overshoot").c_str());
     }
     params_.log_ = false;
     if (!ros::param::get(ns + "/nbvp/log/on", params_.log_))
@@ -649,32 +469,7 @@ bool semMAP::semanticMapper::setParams()
                  "%s. Default is 0.333.",
                  (ns + "/pcl_throttle").c_str());
     }
-    params_.inspection_throttle_ = 0.25;
-    if (!ros::param::get(ns + "/inspection_throttle", params_.inspection_throttle_))
-    {
-        ROS_WARN("No throttle time constant for the inspection view insertion specified. Looking "
-                 "for %s. Default is 0.1.",
-                 (ns + "/inspection_throttle").c_str());
-    }
    
-    params_.output_file_name_ = "gains.csv";
-    if (!ros::param::get(ns + "/output/file/name", params_.output_file_name_))
-    {
-        ROS_WARN("No option for output file name. Looking for %s. Default is true.",
-                 (ns + "/output/file/name").c_str());
-    }
-    params_.output_objects_file_name_ = "gains.csv";
-    if (!ros::param::get(ns + "/output/objects/file/name", params_.output_objects_file_name_))
-    {
-        ROS_WARN("No option for output file name. Looking for %s. Default is true.",
-                 (ns + "/output/objects/file/name").c_str());
-    }
-    params_.utility_method_ = 1;
-    if (!ros::param::get(ns + "/utility/method", params_.utility_method_))
-    {
-        ROS_WARN("No option for utility  function. Looking for %s. Default is true.",
-                 (ns + "/utility/method").c_str());
-    }
     params_.treeType_ = 1;
     if (!ros::param::get(ns + "/octomap/tree_type", params_.treeType_))
     {
@@ -699,6 +494,7 @@ bool semMAP::semanticMapper::setParams()
         ROS_WARN("No option for function. Looking for %s. Default is world.",
                  (ns + "/octomap/world_frame_id").c_str());
     }
+    
     params_.octomapResolution_ = static_cast<float>(0.02);
     if (!ros::param::get(ns + "/octomap/resolution", params_.octomapResolution_))
     {
@@ -772,13 +568,7 @@ bool semMAP::semanticMapper::setParams()
         ROS_WARN("No option for function. Looking for %s. Default is empty",
                  (ns + "/num_of_visits_threshold").c_str());
     }
-    //std::cout << "num_of_visits_threshold " << numOfVisitsThreshold<<std::endl ;
-    logging_period = 10 ; 
-    if (!ros::param::get(ns + "/logging_iteration", logging_period))
-    {
-        ROS_WARN("No option for function. Looking for %s. Default is empty",
-                 (ns + "/logging_iteration").c_str());
-    }
+
 
     return ret;
 }

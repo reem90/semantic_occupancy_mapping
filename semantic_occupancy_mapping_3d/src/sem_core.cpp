@@ -22,7 +22,6 @@
 #include <std_srvs/Empty.h>
 #include <stdio.h>
 #include <tf/transform_datatypes.h>
-#include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <chrono>
@@ -32,7 +31,7 @@
 TimeProfiler timer;
 
 using namespace std;
-std::ofstream outfile;
+
 semMAP::semCore::semCore() : semMAP::MapBase::MapBase()
 {
     setup();
@@ -48,7 +47,6 @@ semMAP::semCore::semCore(OctomapGeneratorBase *octomap_generator_)
 void semMAP::semCore::setup()
 {
     
-    //iterationCount_ = 0;
     for (int i = 0; i < 4; i++)
     {
         inspectionThrottleTime_.push_back(ros::Time::now().toSec());
@@ -57,7 +55,7 @@ void semMAP::semCore::setup()
     bool ifLog = false;
     std::string ns = ros::this_node::getName();
 
-    ros::param::get(ns + "/nbvp/log/on", ifLog);
+    ros::param::get(ns + "/sem/log/on", ifLog);
     if (ifLog)
     {
         time_t rawtime;
@@ -67,9 +65,9 @@ void semMAP::semCore::setup()
     }
 
     debugParam = false;
-    if (!ros::param::get("/nbvp/debug", debugParam))
+    if (!ros::param::get("/sem/debug", debugParam))
     {
-        ROS_WARN("Debugging is off by default. Turn on with /nbvp/debug " ) ;
+        ROS_WARN("Debugging is off by default. Turn on with /sem/debug " ) ;
     }
 }
 

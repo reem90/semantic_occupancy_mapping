@@ -21,16 +21,6 @@ octomap:
 #####################
 # System Related Parameters
 #####################
-system/v_max: 1 #0.5 ##0.5
-system/dyaw_max: 0.5
-# check the relevant sdf file: depth_camera_new.sdf
-system/camera/pitch: [0.0] #sensor_pitch: 0.0
-system/camera/horizontal: [60.0] #sensor_hor_fov: 60
-system/camera/vertical: [45.0] #sensor_ver_fov: 45
-system/bbx/x: 0.3 #0.1 
-system/bbx/y: 0.3 #0.1
-system/bbx/z: 0.3 #0.1
-system/bbx/overshoot: 0.5
 system/localization/use_gazebo_ground_truth: true
 
 

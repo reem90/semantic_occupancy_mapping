@@ -63,7 +63,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <pcl_ros/impl/transforms.hpp>
 #include <sstream>
-//#include "semantic_occupancy_mapping_3d/drone_commander.h"
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -80,7 +79,6 @@ class semanticMapper
     semanticMapper(){};
 
     ~semanticMapper();
-    void computeCameraFOV();
     void posStampedCallback(const geometry_msgs::PoseStamped& pose);
     void posCallback(const geometry_msgs::PoseWithCovarianceStamped& pose);
     void odomCallback(const nav_msgs::Odometry& pose);
@@ -107,7 +105,7 @@ class semanticMapper
     ros::Subscriber posStampedClient_;
     ros::Subscriber odomClient_;
 
-    ros::ServiceServer plannerService_;
+    ros::ServiceServer mapperService_;
     ros::ServiceServer toggleSemanticService;  ///<ROS service to toggle semantic color display
 
     bool toggleUseSemanticColor(
@@ -120,29 +118,14 @@ class semanticMapper
 
     OctomapGeneratorBase* octomap_generator_;
     semMAP::semCore* mapObject;
-    visualization_msgs::Marker area_marker_;
-    //visualization_msgs::Marker explorationAreaInit();
+
     bool ready_;
     semMAP::Params params_;
     std::string logFilePathName_;
     std::ofstream file_path_;
     std::ofstream objects_file_path_;
 
-    visualization_msgs::Marker line_strip;
-    ros::Publisher marker_pub_;
-    ros::Publisher sample_viewpoint_array_pub_;
-
-    //visualization_msgs::MarkerArray sample_points_array  ; 
-
-    //usar_exploration::extractView srv;
     // Global variables
-    double traveled_distance = 0;
-    double information_gain = 0;
-    bool firstPoseCalled = true;
-    geometry_msgs::Pose prePose;
-    int iteration_num = 0;
-    geometry_msgs::PoseArray viewpoints2;
-    double accumulativeGain = 0;
     octomap_msgs::Octomap map_msg_;  ///<ROS octomap message
     std::map<std::string,octomap::ColorOcTreeNode::Color> semanticColoredLabels;
     std::vector<std::string> objectsOfInterest;
@@ -154,61 +137,12 @@ class semanticMapper
     //std::vector<geometry_msgs::Pose> selected_poses;
     bool debug_save_state_param ; 
     bool debug_load_state_param ; 
-    std::ofstream output_file; 
-    std::ifstream input_file; 
     std::string output_file_path_;
     std::string  input_file_path_;
-    std::vector<int> Objectarray ; 
     std::vector<std::array<int, 3> > colorArray ; 
-    int logging_period ; 
+
  
-/*private:
-  friend class boost::serialization::access;
-
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version)
-  {
-    //ar & octomap_generator_;
-    //ar & rrtTree;
-    ar & ready_;
-    //ar & params_;
-    //ar & logFilePathName_;
-    //ar & file_path_;
-    //ar & line_strip;
-   
-    // Global variables
-    ar & traveled_distance ;
-    ar & information_gain ;
-    ar & firstPoseCalled ;
-    ar & prePose;
-    ar & iteration_num ;
-    //ar & viewpoints2;
-    ar & accumulativeGain;
-    //ar & map_msg_;  ///<ROS octomap message
-    //ar & semanticColoredLabels;
-    ar & objectsOfInterest;
-    ar & confidenceThreshold;
-    ar & numOfVisitsThreshold;
-    ar & globalObjectGain;
-    ar & globalVolumetricGain;
-    ar & selected_poses;
-
-  }*/
 };
 
 }  // namespace semMAP
-
-
-/*namespace boost {
-namespace serialization {
-
-template<class Archive>
-void serialize(Archive & ar, geometry_msgs::Pose & g, const unsigned int version)
-{
-    ar & g.position.x & g.position.y & g.position.z;
-    ar & g.orientation.x & g.orientation.y & g.orientation.z & g.orientation.w;
-}
-
-} // namespace serialization
-}*/  // namespace boost
-#endif  // RRT_PLANNER_H
+#endif  // SEMANTIC_MAPPER_H
