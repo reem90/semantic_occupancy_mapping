@@ -4,7 +4,7 @@
     <arg name="enable_logging" default="false" />
     <!-- Whether to use perfect gazebo position of PX4 LPE/EKF2 Position  -->
     <arg name="use_gazebo_ground_truth" value="true"/>
-    <arg name="mapping_param_file" default="$(find semantic_occupancy_mapping_3d)/config/semantic_exploration.yaml" />
+    <arg name="mapping_param_file" default="$(find semantic_occupancy_mapping_3d)/config/semantic_mapping.yaml" />
 
     <!-- Initial position of drone in Gazebo wrold coordinates-->
     <arg name="x" default="0"/>
@@ -29,10 +29,10 @@
     </node>
     
     <!-- Mapping node -->
-    <node pkg="semantic_occupancy_mapping_3d" name="semantic_mapper_node" type="semantic_mapper_node" output="screen">
+    <!--node pkg="semantic_occupancy_mapping_3d" name="semantic_mapper_node" type="semantic_mapper_node" output="screen">
         <remap from="/mavros/local_position/pose" to="/uav1/mavros/local_position/pose"/>
         <remap from="odometry" to="/uav1/odometry/odom_main"/>
-    </node>
+    </node-->
 
 
 

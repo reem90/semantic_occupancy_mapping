@@ -55,6 +55,8 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     ros::NodeHandle nh_private("~");
     semMAP::semanticMapper mapper(nh, nh_private);
+    mapper.mapperCallback(); 
     ros::spin();
+    
     return 0;
 }

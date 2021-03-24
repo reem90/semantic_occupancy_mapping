@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <semantic_occupancy_mapping_3d/sem_core.h>
 #include <cstdlib>
 
-//#include <semantic_exploration/GetDroneState.h>
+
 #include <semantic_occupancy_mapping_3d/semantic_mapper.h>
 #include <semantic_occupancy_mapping_3d/rrt_tree.h>
 #include <semantic_cloud/GetSemanticColoredLabels.h>
@@ -65,7 +65,6 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
 
     // Set up the topics and services
     params_.transfromedPoseDebug = nh_.advertise<geometry_msgs::PoseStamped>("transformed_pose", 100);
-    mapperService_ = nh_.advertiseService("sem_mapper", &semMAP::semanticMapper::mapperCallback, this);
     // Either use perfect positioning from gazebo, or get the px4 estimator position through mavros // OR Pose of MRS System
     // todo: add the topic as a param in config file
     if (params_.use_gazebo_ground_truth_)
@@ -253,25 +252,6 @@ bool semMAP::semanticMapper::toggleUseSemanticColor(std_srvs::Empty::Request& re
 
 void semMAP::semanticMapper::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 {
-    /*
-     * Here we can restrict cloud insertion to a certain drone state
-     * /
-    semantic_exploration::GetDroneState droneStateReq;
-    ROS_INFO("Getting Drone State");
-
-    ros::service::waitForService("get_drone_state",ros::Duration(1.0));
-    if(ros::service::call("get_drone_state", droneStateReq))
-    {
-        ROS_INFO("Current Drone State is:%d",droneStateReq.response.drone_state);
-        // Don't map during takeoff
-        if(droneStateReq.response.drone_state == DroneCommander::TAKE_OFF ||
-           droneStateReq.response.drone_state == DroneCommander::INITIALIZATION)
-            return;
-    }
-    else {
-        return;
-    }
-    */
     //ROS_INFO("Received PointCloud");
     static double last = ros::Time::now().toSec();
     if (ros::Time::now().toSec() - last > params_.pcl_throttle_)
@@ -293,21 +273,15 @@ void semMAP::semanticMapper::insertCloudCallback(const sensor_msgs::PointCloud2:
     }
 }
 
-bool semMAP::semanticMapper::mapperCallback(semantic_occupancy_mapping_3d::GetPath::Request& req,
-                                         semantic_occupancy_mapping_3d::GetPath::Response& res)
+bool semMAP::semanticMapper::mapperCallbackStart()
 {
-    timer.start("[SEMLoop]mapperCallback");
-    ROS_INFO("########### New Planning Iteration ###########");
-
-
     
     if (!ros::ok())
     {
-        ROS_INFO_THROTTLE(1, "Exploration finished. Not planning any further moves.");
+        ROS_INFO_THROTTLE(1, "Mapping finished.");
         return true;
     }
 
-    // Check that mapper is ready to compute path.
     if (!ready_)
     {
         ROS_ERROR_THROTTLE(1, "Mapper not set up: Mapper not ready!");
@@ -325,76 +299,6 @@ bool semMAP::semanticMapper::mapperCallback(semantic_occupancy_mapping_3d::GetPa
         ROS_ERROR_THROTTLE(1, "Mapper not set up: Octomap is empty!");
         return true;
     }
-
-    res.path.clear();
-    params_.marker_id = 0 ; 
-    // Clear old tree and reinitialize.
-    //mapObject->clear();
-    //rrtTree->clearInspectionPath();
-
-    timer.start("[NBVLoop]initializeTree");
-    //mapObject->initialize();
-    timer.stop("[NBVLoop]initializeTree");
-
-    ROS_INFO("Tree Initilization called");
-
-    int loopCount = 0;
-    int k = 1;
-
-    timer.start("[NBVLoop]RRTLoop");
-  /*  while ((!rrtTree->gainFound() || rrtTree->getCounter() < params_.initIterations_) && ros::ok())
-    {
-        ROS_INFO_THROTTLE(0.1, "Counter:%d Cuttoff Iterations:%d GainFound:%d BestGain:%f",
-                          rrtTree->getCounter(), params_.cuttoffIterations_, rrtTree->gainFound(),
-                          rrtTree->getBestGain());
-
-        if (rrtTree->getCounter() > params_.cuttoffIterations_)
-        {
-            ROS_WARN("No gain found, shutting down");
-            ros::shutdown();
-            return true;
-        }
-        if (loopCount > 1000 * (rrtTree->getCounter() + 1))
-        {
-            ROS_WARN("Exceeding maximum failed iterations, return to previous point!");           
-            timer.start("[NBVLoop]GetPathBackToPrevious");
-            res.path = rrtTree->getPathBackToPrevious(req.header.frame_id);
-            timer.stop("[NBVLoop]GetPathBackToPrevious");
-            return true;
-        }
-      
-        timer.start("[NBVLoop]Iterate");
-        if (rrtTree->iterate(1))
-        {
-            
-        }
-        timer.stop("[NBVLoop]Iterate");
-
-        loopCount++;
-        k++;
-    }
-    ROS_INFO("Best Gain Final :%f", rrtTree->getBestGain());*/
-    timer.stop("[NBVLoop]RRTLoop");
-
-    ROS_INFO("Done RRT");
-
-    // Extract the best edge.
-    //res.path = rrtTree->getBestEdge(req.header.frame_id);
-
-    //accumulativeGain += rrtTree->getBestGain();f
-    //bool ObjectFoundFlag = rrtTree->getObjectFlag();
-    //ROS_INFO("SIZE OF THE PATH %d ", res.path.size());
-    
-    //rrtTree->memorizeBestBranch();
- 
-    //drawPath(res.path[res.path.size() - 1], iteration_num);
-    //selected_poses.push_back(res.path[0]);
-
-    //sleep(15) ; 
-  
-
-    
-    timer.dump();
     return true;
 }
 

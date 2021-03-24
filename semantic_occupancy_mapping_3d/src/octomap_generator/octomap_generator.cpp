@@ -997,9 +997,9 @@ void OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>::updateColorAndSemant
                 uint32_t rgb;
                 std::memcpy(&rgb, &it->semantic_color, sizeof(uint32_t));
 
-                sem.semantic_color.b = (rgb >> 16) & 0x0000ff;
+                sem.semantic_color.r = (rgb >> 16) & 0x0000ff;
                 sem.semantic_color.g = (rgb >> 8) & 0x0000ff;
-                sem.semantic_color.r = (rgb)&0x0000ff;
+                sem.semantic_color.b = (rgb)&0x0000ff;
                 sem.confidence = it->confidence;
                 octomap_.updateNodeSemantics(it->x, it->y, it->z, sem);
 
