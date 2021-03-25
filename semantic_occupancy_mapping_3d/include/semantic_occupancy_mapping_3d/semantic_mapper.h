@@ -47,7 +47,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pcl_ros/transforms.h>
 #include <ros/package.h>
 #include <ros/ros.h>
-#include <semantic_occupancy_mapping_3d/GetPath.h>
 #include <semantics_octree/semantics_octree.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
