@@ -1,7 +1,0 @@
-# Requests drone state
-#
-# Returns success status and drone state
-
----
-bool success
-uint8 drone_state

@@ -62,7 +62,6 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>octomap_world</build_depend>
-  <build_depend>kdtree</build_depend>
   <build_depend>trajectory_msgs</build_depend>
   <build_depend>mav_msgs</build_depend>
   <build_depend>eigen_catkin</build_depend>
@@ -81,7 +80,6 @@
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>visualization_msgs</build_export_depend>
   <build_export_depend>octomap_world</build_export_depend>
-  <build_export_depend>kdtree</build_export_depend>
   <build_export_depend>trajectory_msgs</build_export_depend>
   <build_export_depend>mav_msgs</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>

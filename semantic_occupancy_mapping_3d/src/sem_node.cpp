@@ -35,9 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include <mav_msgs/conversions.h>
 //#include <mav_msgs/default_topics.h>
 #include <ros/ros.h>
-#include <semantic_occupancy_mapping_3d/sem_core.h>
 #include <semantic_occupancy_mapping_3d/semantic_mapper.h>
-#include <semantic_occupancy_mapping_3d/rrt_tree.h>
 #include <std_srvs/Empty.h>
 //#include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <chrono>
@@ -55,7 +53,7 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
     ros::NodeHandle nh_private("~");
     semMAP::semanticMapper mapper(nh, nh_private);
-    mapper.mapperCallback(); 
+    mapper.mapperCallbackStart(); 
     ros::spin();
     
     return 0;

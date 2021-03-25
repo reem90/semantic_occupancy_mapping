@@ -18,7 +18,6 @@
 #define SEMCORE_H_
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <kdtree/kdtree.h>
 #include <nav_msgs/Odometry.h>
 #include <octomap_generator/octomap_generator.h>
 #include <octomap_msgs/Octomap.h>

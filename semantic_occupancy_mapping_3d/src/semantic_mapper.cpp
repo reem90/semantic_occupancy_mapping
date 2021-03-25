@@ -34,13 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <chrono>
 #include <thread>
-
-#include <semantic_occupancy_mapping_3d/sem_core.h>
 #include <cstdlib>
-
-
 #include <semantic_occupancy_mapping_3d/semantic_mapper.h>
-#include <semantic_occupancy_mapping_3d/rrt_tree.h>
 #include <semantic_cloud/GetSemanticColoredLabels.h>
 #include <semantic_cloud/SemanticColoredLabels.h>
 
@@ -156,17 +151,11 @@ semMAP::semanticMapper::semanticMapper(const ros::NodeHandle& nh, const ros::Nod
     octomap_generator_->setConfidenceThreshold(confidenceThreshold);
     octomap_generator_->setNumOfVisitsThreshold(numOfVisitsThreshold);
     
-    //debug
-    //params_.camboundries_        getBestEdgeDeep= nh_.advertise<visualization_msgs::Marker>("camBoundries", 10);
-    //params_.fovHyperplanes       = nh_.advertise<visualization_msgs::MarkerArray>( "hyperplanes", 100 );
-
+  
     std::string ns = ros::this_node::getName();
     ROS_INFO("********************* The topic name is:%s", posStampedClient_.getTopic().c_str());
     // Map Initialization Instance.
     ROS_INFO("*************************** Start mapping ******************************");
-    // ###########################################################
-    //mapObject = new semMAP::semCore(octomap_generator_);
-    //mapObject->setParams(params_);
     // ###########################################################
     // Not yet ready. need a position msg first.
     ready_ = false;
@@ -349,16 +338,16 @@ bool semMAP::semanticMapper::setParams()
                  (ns + "/system/localization/use_gazebo_ground_truth").c_str());
     }
     params_.log_ = false;
-    if (!ros::param::get(ns + "/nbvp/log/on", params_.log_))
+    if (!ros::param::get(ns + "/log/on", params_.log_))
     {
-        ROS_WARN("Logging is off by default. Turn on with %s: true", (ns + "/nbvp/log/on").c_str());
+        ROS_WARN("Logging is off by default. Turn on with %s: true", (ns + "/log/on").c_str());
     }
 
     params_.log_throttle_ = 0.5;
-    if (!ros::param::get(ns + "/nbvp/log/throttle", params_.log_throttle_))
+    if (!ros::param::get(ns + "/log/throttle", params_.log_throttle_))
     {
         ROS_WARN("No throttle time for logging specified. Looking for %s. Default is 0.5s.",
-                 (ns + "/nbvp/log/throttle").c_str());
+                 (ns + "/log/throttle").c_str());
     }
     params_.navigationFrame_ = "world";
     if (!ros::param::get(ns + "/tf_frame", params_.navigationFrame_))

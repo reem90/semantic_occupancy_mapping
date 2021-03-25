@@ -31,7 +31,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
   tf
-  kdtree
   cmake_modules
   rospy
   pcl_ros
@@ -56,14 +55,7 @@ find_package(PCL REQUIRED QUIET COMPONENTS common sample_consensus io segmentati
 find_package(octomap REQUIRED)
 
 
-add_service_files(
-  DIRECTORY srv
-  FILES
-  GetPath.srv
-  SelectPose.srv
-  ExtractView.srv
-  GetDroneState.srv
-)
+
 
 generate_messages(
   DEPENDENCIES
@@ -80,7 +72,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include ${OCTOMAP_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
   LIBRARIES ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${PROJECT_NAME}
-  CATKIN_DEPENDS message_runtime roscpp geometry_msgs visualization_msgs tf kdtree  mav_msgs rospy std_msgs pcl_ros genmsg
+  CATKIN_DEPENDS message_runtime roscpp geometry_msgs visualization_msgs tf  mav_msgs rospy std_msgs pcl_ros genmsg
   DEPENDS octomap PCL
 )
 ###########
@@ -107,8 +99,6 @@ set(LINK_LIBS
 
 
 add_executable(sem_node  src/sem_node.cpp
-                                src/sem_core.cpp
-                                src/rrt_tree.cpp
                                 src/semantic_mapper.cpp
                                 src/octomap_generator/octomap_generator.cpp
                                 src/semantic_octree/semantics_bayesian.cpp
@@ -125,11 +115,4 @@ target_link_libraries(sem_node
    ${catkin_LIBRARIES} 
    ${PCL_LIBRARIES}
 )
-
-
-
-add_executable(semantic_mapper_node src/semantic_mapper_node.cpp)
-add_dependencies(semantic_mapper_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(semantic_mapper_node ${OCTOMAP_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${Boost_LIBRARIES})
-
 

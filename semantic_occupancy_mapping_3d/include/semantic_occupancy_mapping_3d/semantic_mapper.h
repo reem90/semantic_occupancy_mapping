@@ -36,7 +36,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SEMANTIC_MAPPER_H
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <kdtree/kdtree.h>
 #include <message_filters/subscriber.h>
 #include <nav_msgs/Odometry.h>
 #include <octomap/ColorOcTree.h>
@@ -49,8 +48,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ros/package.h>
 #include <ros/ros.h>
 #include <semantic_occupancy_mapping_3d/GetPath.h>
-#include <semantic_occupancy_mapping_3d/sem_core.h>
-#include <semantic_occupancy_mapping_3d/rrt_tree.h>
 #include <semantics_octree/semantics_octree.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
@@ -71,7 +68,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace semMAP
 {
+struct Params
+{
+     std::string pointCloudTopic_;
+    std::string worldFrameId_;
+    std::string octomapSavePath_;
+    float octomapResolution_;
+    float maxRange_;
+    float rayCastRange_;
+    float clampingThresMin_;
+    float clampingThresMax_;
+    float occupancyThres_;
+    float probHit_;
+    float probMiss_;
+    int treeType_;  ///<0: color octree, 1: semantic octree using bayesian fusion, 2: semantic octree using max fusion
 
+    bool debug_ ;
+    bool log_;
+    double log_throttle_;
+    double pcl_throttle_;
+    bool use_gazebo_ground_truth_;
+
+    std::string output_file_name_;
+    std::string output_objects_file_name_;
+    
+    ros::Publisher transfromedPoseDebug;
+    std::string navigationFrame_;
+    
+
+};
 class semanticMapper
 {
   public:
@@ -114,9 +139,7 @@ class semanticMapper
 
     ros::Publisher fullmapPub_;  ///<ROS publisher for octomap message
     ros::Subscriber pointcloud_sub_;
-
     OctomapGeneratorBase* octomap_generator_;
-    semMAP::semCore* mapObject;
 
     bool ready_;
     semMAP::Params params_;
