@@ -45,6 +45,7 @@ find_package(catkin REQUIRED COMPONENTS
   octomap_msgs
   minkindr
   minkindr_conversions
+  semantic_cloud
 )
 
 find_package(Eigen REQUIRED)

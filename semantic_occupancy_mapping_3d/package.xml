@@ -73,7 +73,10 @@
   <build_depend>std_srvs</build_depend>
   <build_depend>octomap_msgs</build_depend>
   <build_depend>rostest</build_depend>
-  
+  <build_depend>semantic_cloud</build_depend>
+  <build_depend>minkindr</build_depend>
+  <build_depend>minkindr_conversions</build_depend>
+
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>tf</build_export_depend>
   <build_export_depend>message_runtime</build_export_depend>
@@ -90,7 +93,9 @@
   <build_export_depend>std_srvs</build_export_depend>
   <build_export_depend>octomap_msgs</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
-
+  <build_export_depend>semantic_cloud</build_export_depend>
+  <build_export_depend>minkindr</build_export_depend>
+  <build_export_depend>minkindr_conversions</build_export_depend>
   
   <exec_depend>roscpp</exec_depend>
   <exec_depend>tf</exec_depend>
@@ -109,7 +114,9 @@
   <exec_depend>std_srvs</exec_depend>
   <exec_depend>octomap_msgs</exec_depend>
   <exec_depend>rospy</exec_depend>
-
+  <exec_depend>semantic_cloud</exec_depend>
+  <exec_depend>minkindr</exec_depend>
+  <exec_depend>minkindr_conversions</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
